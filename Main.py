@@ -3,6 +3,8 @@ from scipy.optimize import least_squares
 import numpy as np
 
 
+
+
 anchors = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
 
 
@@ -92,8 +94,18 @@ def getTagPosition(anchors, distances):
 # for i in range(4):
 #     print((anchors[i][0] - res1.x[0]) ** 2 + (anchors[i][1] - res1.x[1]) ** 2 - distances[i] ** 2)
 
-tags_data = []
-for el in tag2anchs_dist:
-    tags_data.append([el[0], getTagPosition(anchors, el[1:])])
+for el in tags_data['dist_to_anchors']:
+    tags_data['tag_xy'].append(getTagPosition(anchors, el))
 print(tags_data)
+
+
+def checkTagInPoligon(tag_xy, poly_xy):
+    poly_min_x, poly_max_x = min([poly_xy[:][0]]), max([poly_xy[:][0]])
+    poly_min_y, poly_max_y = min([poly_xy[:][1]]), max([poly_xy[:][1]])
+
+    if tag_xy[0] > poly_max_x or tag_xy[0] < poly_min_x:
+        return False
+    if tag_xy[1] > poly_max_y or tag_xy[1] < poly_min_y:
+        return False
+
 

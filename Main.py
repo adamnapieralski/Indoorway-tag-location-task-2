@@ -11,20 +11,57 @@ with open("python_zadanie_2.txt", "r") as task_file:
 
 tag2anchs_dist = []
 
+tags_data = {'tag_id': [], 'dist_to_anchors': [], 'tag_xy': []}
 blank_count = 0;
 for line in task_file_lines[task_file_lines.index('2. Pomiary odległości obiektów od anchorów\n') + 6:]:
     if line != '\n':
         str_line = line.strip('\n').split(' ')
-        num_lin = [float(i) for i in str_line]
-        num_lin[0] = int(num_lin[0])
-        tag2anchs_dist.append(num_lin)
+        num_line = [float(i) for i in str_line]
+        num_line[0] = int(num_line[0])
+        tags_data['tag_id'].append(num_line[0])
+        tags_data['dist_to_anchors'].append(num_line[1:])
+        tag2anchs_dist.append(num_line)
         blank_count = 0;
     else:
         blank_count += 1
     if blank_count > 1:
         break
 
-print(tag2anchs_dist)
+print(tags_data)
+
+blank_count = 0
+polys_data = {'poly_id': [], 'nodes_id': []}
+for line in task_file_lines[task_file_lines.index('3. Opis wielokątów\n') + 6:]:
+    if line != '\n':
+        str_line = line.strip('\n').replace('[', '').replace(']', '').split(' ')
+        num_line = [int(i) for i in str_line]
+        polys_data['poly_id'].append(num_line[0])
+        polys_data['nodes_id'].append(num_line[1:])
+        blank_count = 0
+    else:
+        blank_count += 1
+    if blank_count > 1:
+        break
+
+print(polys_data)
+
+blank_count = 0
+
+nodes_data = {'node_id': [], 'node_xy': []}
+for line in task_file_lines[task_file_lines.index('4. Położenia wierzchołków wielokątów\n') + 6:]:
+    if line != '\n':
+        str_line = line.strip('\n').split(' ')
+        num_line = [float(i) for i in str_line]
+        num_line[0] = int(num_line[0])
+        nodes_data['node_id'].append(num_line[0])
+        nodes_data['node_xy'].append(tuple(num_line[1:3]))
+        blank_count = 0
+    else:
+        blank_count += 1
+    if blank_count > 1:
+        break
+
+print(nodes_data)
 
 def equations(X_vec, **kwargs):
     F = []
@@ -59,3 +96,4 @@ tags_data = []
 for el in tag2anchs_dist:
     tags_data.append([el[0], getTagPosition(anchors, el[1:])])
 print(tags_data)
+

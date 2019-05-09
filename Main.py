@@ -13,7 +13,7 @@ with open("python_zadanie_2.txt", "r") as task_file:
 
 tag2anchs_dist = []
 
-tags_data = {'tag_id': [], 'dist_to_anchors': [[]], 'tag_xy': []}
+tags_data = {'tag_id': [], 'dist_to_anchors': [], 'tag_xy': []}
 blank_count = 0;
 for line in task_file_lines[task_file_lines.index('2. Pomiary odległości obiektów od anchorów\n') + 6:]:
     if line != '\n':
@@ -23,8 +23,7 @@ for line in task_file_lines[task_file_lines.index('2. Pomiary odległości obiek
         if num_line[0] not in tags_data['tag_id']:
             tags_data['tag_id'].append(num_line[0])
             tags_data['dist_to_anchors'].append([num_line[1:]])
-            tag2anchs_dist.append(num_line)
-            pass
+            # tag2anchs_dist.append(num_line)
         else:
             index = tags_data['tag_id'].index(num_line[0])
             tags_data['dist_to_anchors'][index].append(num_line[1:])
@@ -35,18 +34,11 @@ for line in task_file_lines[task_file_lines.index('2. Pomiary odległości obiek
     if blank_count > 1:
         break
 
-# tags_data_compact = {'tag_id': [], 'dist_to_anchors': [], 'tag_xy': []}
-# for counter, tag_id in tags_data['tag_id']:
-#     tags_data_compact['tag_id'].append(tag_id)
-#     tags_data_compact['dist_to_anchors'].append(tags_data['dist_to_anchors'])
-#
-# for tag_record in tags_data:
-#     pass
-
-print(tags_data)
+# sort tags_data by tag_id
+tags_data['tag_id'], tags_data['dist_to_anchors'] = zip(*sorted(zip(tags_data['tag_id'], tags_data['dist_to_anchors'])))
 
 blank_count = 0
-polys_data = {'poly_id': [], 'nodes_id': []}
+polys_data = {'poly_id': [], 'nodes_id': [], 'contained_tags_ids': [], 'contained_tags_spec': []}
 for line in task_file_lines[task_file_lines.index('3. Opis wielokątów\n') + 6:]:
     if line != '\n':
         str_line = line.strip('\n').replace('[', '').replace(']', '').split(' ')
@@ -71,7 +63,6 @@ for line in task_file_lines[task_file_lines.index('4. Położenia wierzchołków
         num_line[0] = int(num_line[0])
         nodes_data['node_id'].append(num_line[0])
         nodes_data['node_xy'].append(tuple(num_line[1:3]))
-        nodes_data['node_xy'].append([()])
         blank_count = 0
     else:
         blank_count += 1
@@ -198,6 +189,39 @@ def isTagInPoligon(tag_xy, poly_xy):
 P1 = (0.5, 0.99999)
 poly = [(1., 1.), (0., -2.), (-1., 1.)]
 print(isTagInPoligon(P1, poly))
+
+
+# determine and save which tags were contained in polygons
+
+for poly_nodes in polys_data['nodes_id']:
+    poly_xy = []
+    tags_contained_spec = []
+    for node_id in poly_nodes:
+        poly_xy.append(nodes_data['node_xy'][nodes_data['node_id'].index(node_id)])
+    tags_contained_ids = []
+    for tags_multi in tags_data['tag_xy']:
+        tags_contained_spec_multi = []
+        for tag in tags_multi:
+            if isTagInPoligon(tag, poly_xy):
+                tags_contained_ids.append(tags_data['tag_id'][tags_data['tag_xy'].index(tags_multi)])
+                break
+        for tag in tags_multi:
+            if isTagInPoligon(tag, poly_xy):
+                tags_contained_spec_multi.append(True)
+            else:
+                tags_contained_spec_multi.append(False)
+        tags_contained_spec.append(tags_contained_spec_multi)
+
+    polys_data['contained_tags_spec'].append(tags_contained_spec)
+    polys_data['contained_tags_ids'].append(tags_contained_ids)
+
+
+
+
+
+
+print(polys_data)
+
 
 
 

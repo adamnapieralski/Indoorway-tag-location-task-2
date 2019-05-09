@@ -13,21 +13,35 @@ with open("python_zadanie_2.txt", "r") as task_file:
 
 tag2anchs_dist = []
 
-tags_data = {'tag_id': [], 'dist_to_anchors': [], 'tag_xy': []}
+tags_data = {'tag_id': [], 'dist_to_anchors': [[]], 'tag_xy': []}
 blank_count = 0;
 for line in task_file_lines[task_file_lines.index('2. Pomiary odległości obiektów od anchorów\n') + 6:]:
     if line != '\n':
         str_line = line.strip('\n').split(' ')
         num_line = [float(i) for i in str_line]
         num_line[0] = int(num_line[0])
-        tags_data['tag_id'].append(num_line[0])
-        tags_data['dist_to_anchors'].append(num_line[1:])
-        tag2anchs_dist.append(num_line)
+        if num_line[0] not in tags_data['tag_id']:
+            tags_data['tag_id'].append(num_line[0])
+            tags_data['dist_to_anchors'].append([num_line[1:]])
+            tag2anchs_dist.append(num_line)
+            pass
+        else:
+            index = tags_data['tag_id'].index(num_line[0])
+            tags_data['dist_to_anchors'][index].append(num_line[1:])
+
         blank_count = 0;
     else:
         blank_count += 1
     if blank_count > 1:
         break
+
+# tags_data_compact = {'tag_id': [], 'dist_to_anchors': [], 'tag_xy': []}
+# for counter, tag_id in tags_data['tag_id']:
+#     tags_data_compact['tag_id'].append(tag_id)
+#     tags_data_compact['dist_to_anchors'].append(tags_data['dist_to_anchors'])
+#
+# for tag_record in tags_data:
+#     pass
 
 print(tags_data)
 
@@ -57,6 +71,7 @@ for line in task_file_lines[task_file_lines.index('4. Położenia wierzchołków
         num_line[0] = int(num_line[0])
         nodes_data['node_id'].append(num_line[0])
         nodes_data['node_xy'].append(tuple(num_line[1:3]))
+        nodes_data['node_xy'].append([()])
         blank_count = 0
     else:
         blank_count += 1
@@ -94,8 +109,13 @@ def getTagPosition(anchors, distances):
 # for i in range(4):
 #     print((anchors[i][0] - res1.x[0]) ** 2 + (anchors[i][1] - res1.x[1]) ** 2 - distances[i] ** 2)
 
-for el in tags_data['dist_to_anchors']:
-    tags_data['tag_xy'].append(getTagPosition(anchors, el))
+
+for counter1, tag_distances in enumerate(tags_data['dist_to_anchors']):
+    for counter2, tag_dist in enumerate(tag_distances):
+        if counter2 == 0:
+            tags_data['tag_xy'].append([getTagPosition(anchors, tag_dist)])
+        else:
+            tags_data['tag_xy'][counter1].append(getTagPosition(anchors, tag_dist))
 print(tags_data)
 
 def getLineEquationCoeffs(seg):
@@ -159,11 +179,12 @@ def isTagInPoligon(tag_xy, poly_xy):
     refPoints = [refPoint, (refPoint[0] + eps / 4, refPoint[1]), (refPoint[0], refPoint[1] - eps / 4),
                  (refPoint[0] - eps / 4, refPoint[1]), (refPoint[0], refPoint[1] + eps / 4)]
 
+    # check for all reference points to make sure collinearity doesnt spoil result
     for refPnt in refPoints:
         tag_seg = [tag_xy, refPnt]
         intersects_count = 0
-        for poly_nod in enumerate(poly_xy):
-            poly_seg = [poly_nod[1], poly_xy[poly_nod[0] - 1]]
+        for counter, poly_nod in enumerate(poly_xy):
+            poly_seg = [poly_nod, poly_xy[counter - 1]]
 
             if doSegmentsIntersect(tag_seg, poly_seg):
                 intersects_count += 1
@@ -174,7 +195,7 @@ def isTagInPoligon(tag_xy, poly_xy):
             continue
     return False
 
-P1 = (1, 0.99999)
+P1 = (0.5, 0.99999)
 poly = [(1., 1.), (0., -2.), (-1., 1.)]
 print(isTagInPoligon(P1, poly))
 

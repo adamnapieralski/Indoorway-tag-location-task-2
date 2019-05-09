@@ -104,7 +104,7 @@ def getLineEquationCoeffs(seg):
 
     A = y2 - y1
     B = x1 - x2
-    C = (y2 * x1) * (y1 * x2)
+    C = (x2 * y1) - (x1 * y2)
 
     return A, B, C
 
@@ -130,7 +130,7 @@ def doSegmentsIntersect(segA, segB):
 
     a2, b2, c2 = getLineEquationCoeffs(segB)
 
-    dA_1 = a2 * xA_1 + b2 * yA_1 + c1
+    dA_1 = a2 * xA_1 + b2 * yA_1 + c2
     dA_2 = a2 * xA_2 + b2 * yA_2 + c2
 
     if dA_1 * dA_2 > 0:
@@ -143,8 +143,9 @@ def doSegmentsIntersect(segA, segB):
     return True
 
 def isTagInPoligon(tag_xy, poly_xy):
-    poly_min_x, poly_max_x = min([poly_xy[:][0]]), max([poly_xy[:][0]])
-    poly_min_y, poly_max_y = min([poly_xy[:][1]]), max([poly_xy[:][1]])
+
+    poly_min_x, poly_max_x = min([pnt[0] for pnt in poly_xy]), max([pnt[0] for pnt in poly_xy])
+    poly_min_y, poly_max_y = min([pnt[1] for pnt in poly_xy]), max([pnt[1] for pnt in poly_xy])
 
     # polygon bounding box check
     if tag_xy[0] > poly_max_x or tag_xy[0] < poly_min_x:
@@ -152,6 +153,30 @@ def isTagInPoligon(tag_xy, poly_xy):
     if tag_xy[1] > poly_max_y or tag_xy[1] < poly_min_y:
         return False
 
+    # create reference point which together with tag will create segment to check intersections
+    eps = 0.2
+    refPoint = (poly_max_x + eps * abs(poly_max_x), poly_max_y + eps * abs(poly_max_y))
+    refPoints = [refPoint, (refPoint[0] + eps / 4, refPoint[1]), (refPoint[0], refPoint[1] - eps / 4),
+                 (refPoint[0] - eps / 4, refPoint[1]), (refPoint[0], refPoint[1] + eps / 4)]
+
+    for refPnt in refPoints:
+        tag_seg = [tag_xy, refPnt]
+        intersects_count = 0
+        for poly_nod in enumerate(poly_xy):
+            poly_seg = [poly_nod[1], poly_xy[poly_nod[0] - 1]]
+
+            if doSegmentsIntersect(tag_seg, poly_seg):
+                intersects_count += 1
+
+        if intersects_count % 2 == 1:
+            return True
+        else:
+            continue
+    return False
+
+P1 = (1, 0.99999)
+poly = [(1., 1.), (0., -2.), (-1., 1.)]
+print(isTagInPoligon(P1, poly))
 
 
 

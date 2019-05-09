@@ -98,14 +98,60 @@ for el in tags_data['dist_to_anchors']:
     tags_data['tag_xy'].append(getTagPosition(anchors, el))
 print(tags_data)
 
+def getLineEquationCoeffs(seg):
+    x1, y1 = seg[0][0], seg[0][1]
+    x2, y2 = seg[1][0], seg[1][1]
 
-def checkTagInPoligon(tag_xy, poly_xy):
+    A = y2 - y1
+    B = x1 - x2
+    C = (y2 * x1) * (y1 * x2)
+
+    return A, B, C
+
+def doSegmentsIntersect(segA, segB):
+    xA_1, yA_1 = segA[0][0], segA[0][1]
+    xA_2, yA_2 = segA[1][0], segA[1][1]
+
+    xB_1, yB_1 = segB[0][0], segB[0][1]
+    xB_2, yB_2 = segB[1][0], segB[1][1]
+
+    # seg1 as inf line
+    # equation of line1 as Ax + By + C = 0
+
+    a1, b1, c1 = getLineEquationCoeffs(segA)
+
+    # check equation for values of seg2 coords
+    dB_1 = a1 * xB_1 + b1 * yB_1 + c1
+    dB_2 = a1 * xB_2 + b1 * yB_2 + c1
+
+    #if both seg2 points are on the same side of line1 - no intersection
+    if dB_1 * dB_2 > 0:
+        return False
+
+    a2, b2, c2 = getLineEquationCoeffs(segB)
+
+    dA_1 = a2 * xA_1 + b2 * yA_1 + c1
+    dA_2 = a2 * xA_2 + b2 * yA_2 + c2
+
+    if dA_1 * dA_2 > 0:
+        return False
+
+    # if segments are collinear
+    if (a1 * b2) - (a2 * b1) == 0.:
+        return False
+
+    return True
+
+def isTagInPoligon(tag_xy, poly_xy):
     poly_min_x, poly_max_x = min([poly_xy[:][0]]), max([poly_xy[:][0]])
     poly_min_y, poly_max_y = min([poly_xy[:][1]]), max([poly_xy[:][1]])
 
+    # polygon bounding box check
     if tag_xy[0] > poly_max_x or tag_xy[0] < poly_min_x:
         return False
     if tag_xy[1] > poly_max_y or tag_xy[1] < poly_min_y:
         return False
+
+
 
 

@@ -257,4 +257,21 @@ fig, ax = plt.subplots()
 ax.set_xlim(-1.5, 1.5)
 ax.set_ylim(-1.5, 1.5)
 ax.add_collection(lc0); ax.add_collection(lc1); ax.add_collection(lc2); ax.add_collection(lc3); ax.add_collection(lc4)
-plt.show()
+# plt.show()
+
+tags_1_only = []
+
+for tag_counter, tag_spec in enumerate(polys_data['contained_tags_spec'][1]['contained_state']):
+    for counter2, tag_state in enumerate(tag_spec):
+        if tag_state is True \
+                and polys_data['contained_tags_spec'][2]['contained_state'][tag_counter][counter2] is False:
+            tags_1_only.append(polys_data['contained_tags_spec'][1]['tag_id'][tag_counter])
+            break
+print(tags_data['tag_xy'])
+p = []
+p = [j for i in tags_data['tag_xy'] for j in i]
+print(p)
+
+p = [[0]] * len(tags_data['tag_id'])
+print(p[0])
+# print(*zip(*(tags_data['tag_xy'][tags_data['tag_id'].index(0)])))

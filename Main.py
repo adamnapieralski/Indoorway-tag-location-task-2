@@ -226,13 +226,30 @@ for poly_nodes in polys_data['nodes_id']:
     polys_data['contained_tags_spec'].append(tags_contained_spec)
     polys_data['contained_tags_ids'].append(tags_contained_ids)
 
-
-
-
-
-
 print(polys_data)
 
+polys_lines = []
+for poly_nodes in polys_data['nodes_id']:
+    poly_lines = []
+
+    for counter1, node_id in enumerate(poly_nodes):
+        point1 = (nodes_data['node_xy'][nodes_data['node_id'].index(node_id)])
+        point2 = (nodes_data['node_xy'][nodes_data['node_id'].index(poly_nodes[counter1 - 1])])
+        poly_line = [point1, point2]
+        poly_lines.append(poly_line)
+    polys_lines.append(poly_lines)
+polys_data['poly_lines'] = polys_lines
 
 
+lc0 = LineCollection(polys_data['poly_lines'][0], colors='r')
+lc1 = LineCollection(polys_data['poly_lines'][1], colors='g', linewidths=2)
+lc2 = LineCollection(polys_data['poly_lines'][2], colors='b')
+lc3 = LineCollection(polys_data['poly_lines'][3], colors='y')
+lc4 = LineCollection(polys_data['poly_lines'][4], colors='m')
+fig, ax = plt.subplots()
+ax.set_xlim(-1.5, 1.5)
+ax.set_ylim(-1.5, 1.5)
+ax.add_collection(lc0); ax.add_collection(lc1); ax.add_collection(lc2); ax.add_collection(lc3); ax.add_collection(lc4)
+plt.show()
 
+print(tags_data['tag_id'])

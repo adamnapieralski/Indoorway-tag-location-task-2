@@ -1,17 +1,32 @@
-from sympy import Symbol, nsolve
 from scipy.optimize import least_squares
 import numpy as np
 
+import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+from matplotlib import colors as mcolors
 
-
-
-anchors = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
+# anchors = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
 
 
 with open("python_zadanie_2.txt", "r") as task_file:
     task_file_lines = task_file.readlines()
 
-tag2anchs_dist = []
+anchors_data = {'anchor_id': [], 'anchor_xy': []}
+blank_count = 0
+for line in task_file_lines[task_file_lines.index('1. Położenia anchorów\n') + 6:]:
+    if line != '\n':
+        str_line = line.strip('\n').split(' ')
+        num_line = [float(i) for i in str_line]
+        num_line[0] = int(num_line[0])
+        anchors_data['anchor_id'].append(num_line[0])
+        anchors_data['anchor_xy'].append(tuple(num_line[1:3]))
+
+        blank_count = 0;
+    else:
+        blank_count += 1
+    if blank_count > 1:
+        break
+print(anchors_data)
 
 tags_data = {'tag_id': [], 'dist_to_anchors': [], 'tag_xy': []}
 blank_count = 0;
@@ -23,7 +38,6 @@ for line in task_file_lines[task_file_lines.index('2. Pomiary odległości obiek
         if num_line[0] not in tags_data['tag_id']:
             tags_data['tag_id'].append(num_line[0])
             tags_data['dist_to_anchors'].append([num_line[1:]])
-            # tag2anchs_dist.append(num_line)
         else:
             index = tags_data['tag_id'].index(num_line[0])
             tags_data['dist_to_anchors'][index].append(num_line[1:])
@@ -54,7 +68,6 @@ for line in task_file_lines[task_file_lines.index('3. Opis wielokątów\n') + 6:
 print(polys_data)
 
 blank_count = 0
-
 nodes_data = {'node_id': [], 'node_xy': []}
 for line in task_file_lines[task_file_lines.index('4. Położenia wierzchołków wielokątów\n') + 6:]:
     if line != '\n':
@@ -81,8 +94,8 @@ def equations(X_vec, **kwargs):
 def getTagPosition(anchors, distances):
     X_vec_0 = np.array([1, 1])
     tag_data = {'anchors': anchors, 'distances': distances}
-    res1 = least_squares(equations, X_vec_0, method='lm', kwargs=tag_data)
-    return tuple(res1.x)
+    result = least_squares(equations, X_vec_0, method='lm', kwargs=tag_data)
+    return tuple(result.x)
 
 # def getTagPositionNSolve(anchors, distances):
 #     x, y = Symbol('x'), Symbol('y')
@@ -104,10 +117,10 @@ def getTagPosition(anchors, distances):
 for counter1, tag_distances in enumerate(tags_data['dist_to_anchors']):
     for counter2, tag_dist in enumerate(tag_distances):
         if counter2 == 0:
-            tags_data['tag_xy'].append([getTagPosition(anchors, tag_dist)])
+            tags_data['tag_xy'].append([getTagPosition(anchors_data['anchor_xy'], tag_dist)])
         else:
-            tags_data['tag_xy'][counter1].append(getTagPosition(anchors, tag_dist))
-print(tags_data)
+            tags_data['tag_xy'][counter1].append(getTagPosition(anchors_data['anchor_xy'], tag_dist))
+print(tags_data['tag_xy'])
 
 def getLineEquationCoeffs(seg):
     x1, y1 = seg[0][0], seg[0][1]
@@ -203,14 +216,12 @@ for poly_nodes in polys_data['nodes_id']:
         tags_contained_spec_multi = []
         for tag in tags_multi:
             if isTagInPoligon(tag, poly_xy):
-                tags_contained_ids.append(tags_data['tag_id'][tags_data['tag_xy'].index(tags_multi)])
-                break
-        for tag in tags_multi:
-            if isTagInPoligon(tag, poly_xy):
                 tags_contained_spec_multi.append(True)
             else:
                 tags_contained_spec_multi.append(False)
         tags_contained_spec.append(tags_contained_spec_multi)
+        if True in tags_contained_spec_multi:
+            tags_contained_ids.append(tags_data['tag_id'][tags_data['tag_xy'].index(tags_multi)])
 
     polys_data['contained_tags_spec'].append(tags_contained_spec)
     polys_data['contained_tags_ids'].append(tags_contained_ids)

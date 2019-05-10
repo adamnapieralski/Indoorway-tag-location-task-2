@@ -207,8 +207,11 @@ print(isTagInPoligon(P1, poly))
 # determine and save which tags were contained in polygons
 
 for poly_nodes in polys_data['nodes_id']:
-    poly_xy = []
+    tags_poly_contained_spec = {'tag_id': tags_data['tag_id'], 'contained_state': []}
     tags_contained_spec = []
+
+    # create list of points of current polygon
+    poly_xy = []
     for node_id in poly_nodes:
         poly_xy.append(nodes_data['node_xy'][nodes_data['node_id'].index(node_id)])
     tags_contained_ids = []
@@ -219,12 +222,16 @@ for poly_nodes in polys_data['nodes_id']:
                 tags_contained_spec_multi.append(True)
             else:
                 tags_contained_spec_multi.append(False)
-        tags_contained_spec.append(tags_contained_spec_multi)
+
+        tags_poly_contained_spec['contained_state'].append(tags_contained_spec_multi)
         if True in tags_contained_spec_multi:
             tags_contained_ids.append(tags_data['tag_id'][tags_data['tag_xy'].index(tags_multi)])
 
-    polys_data['contained_tags_spec'].append(tags_contained_spec)
+    polys_data['contained_tags_spec'].append(tags_poly_contained_spec)
     polys_data['contained_tags_ids'].append(tags_contained_ids)
+
+print('contained_tags_spec')
+print(polys_data['contained_tags_spec'])
 
 print(polys_data)
 
@@ -251,5 +258,3 @@ ax.set_xlim(-1.5, 1.5)
 ax.set_ylim(-1.5, 1.5)
 ax.add_collection(lc0); ax.add_collection(lc1); ax.add_collection(lc2); ax.add_collection(lc3); ax.add_collection(lc4)
 plt.show()
-
-print(tags_data['tag_id'])

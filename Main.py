@@ -298,4 +298,4 @@ def jacobian(X_vec):
     return np.array(J)
 
 result = least_squares(equations2, X_vec_0, jacobian, method='lm')
-print(result)
+print(*zip(*anchors_data['anchor_xy']))

@@ -92,7 +92,7 @@ def equations(X_vec, **kwargs):
     return np.array(F)
 
 def getTagPosition(anchors, distances):
-    X_vec_0 = np.array([1, 1])
+    X_vec_0 = np.array([0, 0])
     tag_data = {'anchors': anchors, 'distances': distances}
     result = least_squares(equations, X_vec_0, method='lm', kwargs=tag_data)
     return tuple(result.x)
@@ -275,3 +275,27 @@ print(p)
 p = [[0]] * len(tags_data['tag_id'])
 print(p[0])
 # print(*zip(*(tags_data['tag_xy'][tags_data['tag_id'].index(0)])))
+
+
+dist = [1.6829232288, 2.23285652809, 1.73903852618, 0.545371474832]
+anchs = anchors_data['anchor_xy']
+def equations2(X_vec):
+    F = []
+    for i in range(4):
+        F.append((anchs[i][0] - X_vec[0]) ** 2 + (anchs[i][1] - X_vec[1]) ** 2
+                 - dist[i] ** 2)
+    return np.array(F)
+
+X_vec_0 = np.array([0, 0])
+result = least_squares(equations2, X_vec_0, method='trf')
+print(result)
+print('\n')
+
+def jacobian(X_vec):
+    J = []
+    for i in range(4):
+        J.append([-2 * anchs[i][0] + 2 * X_vec[0], -2 * anchs[i][1] + 2 * X_vec[1]])
+    return np.array(J)
+
+result = least_squares(equations2, X_vec_0, jacobian, method='lm')
+print(result)
